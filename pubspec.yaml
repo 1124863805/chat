@@ -1,0 +1,47 @@
+name: chat
+version: 1.0.0+1
+publish_to: none
+description: A new Flutter project.
+environment: 
+  sdk: '>=2.15.0 <3.0.0'
+
+dependencies:
+  flutter_localizations:
+    sdk: flutter
+  cupertino_icons: ^1.0.2
+  get: 4.6.5
+  flutter_lints: ^1.0.0
+  socket_io_client: ^1.0.2
+  bot_toast: ^4.0.1 #Toast
+  keyboard_dismisser: ^2.0.0
+  flutter_screenutil: ^5.0.0+2 #屏幕适配
+  extended_image: ^6.0.1
+  dio: ^4.0.1
+  bubble_tab_indicator: ^0.1.5
+  flutter_svg: ^0.23.0+1
+  photo_view: ^0.13.0
+  image_gallery_saver: '^1.7.0' #照片保存
+  app_settings: ^4.1.1 #应用设置
+  permission_handler: ^8.3.0
+  wechat_camera_picker: ^2.6.2
+  wechat_assets_picker: ^6.2.2
+  extended_text_field: ^9.0.2
+  extended_text: ^8.0.2
+  extended_list: ^3.0.0
+  flutter: 
+    sdk: flutter
+
+dev_dependencies:
+  flutter_localizations:
+    sdk: flutter
+  flutter_test: 
+    sdk: flutter
+
+flutter: 
+  uses-material-design: true
+  assets:
+    - assets/
+    - assets/chat_content/
+    - assets/chat_content/more/
+    - assets/chat_content/expression/
+    - assets/chat_content/expression_content/
