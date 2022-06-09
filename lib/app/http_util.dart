@@ -10,7 +10,7 @@ import 'package:get/get_core/src/get_main.dart';
 import 'package:intl/intl.dart';
 import 'package:path_provider/path_provider.dart';
 
-const kHttpHost = "http://192.168.2.15:8082/";
+const kHttpHost = "http://192.168.2.26:8082/";
 
 class HttpUtil {
   factory HttpUtil() => _getInstance();

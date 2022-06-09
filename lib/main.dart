@@ -10,7 +10,7 @@ import 'package:socket_io_client/socket_io_client.dart';
 import 'app/modules/message_content/controllers/message_content_controller.dart';
 import 'app/routes/app_pages.dart';
 
-var basrUrl = "http://192.168.2.15:9098";
+var basrUrl = "http://192.168.2.26:9098";
 
 void main() {
   initServices();
@@ -106,12 +106,21 @@ class ImService extends GetxService {
     });
   }
 
+  // 更新聊天列表
   void updateList(dynamic message) {
-    for (var item in list) {
-      if (item["userId"].toString() == message["receiver"].toString()) {
-        item["lastMessage"] = message;
+    int index =
+        list.indexWhere((item) => item["userId"] == message["receiver"]);
+    if (index == -1) {
+      // 如果不存在就更新聊天列表
+      list.insert(0, {"userId": message["receiver"], "lastMessage": message});
+    } else {
+      for (var item in list) {
+        if (item["userId"].toString() == message["receiver"].toString()) {
+          item["lastMessage"] = message;
+        }
       }
     }
+
     list.refresh();
   }
 

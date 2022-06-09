@@ -102,7 +102,7 @@ class MessageView extends GetView<MessageController> {
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
                             LT(
-                              text: item["userId"],
+                              text: item["userId"].toString(),
                               right: 20.w,
                               fontSize: 16.w,
                               weight: FontWeight.w400,
@@ -125,7 +125,7 @@ class MessageView extends GetView<MessageController> {
                           // SizedBox(height: 8.w),
                           // if (imList.unread != 0)
                           //   Container(
-                          //       padding: EdgeInsets.symmetric(
+                          //       padding: EdgeInsetsmmetric(
                           //           horizontal: 5.w, vertical: 2.w),
                           //       decoration: BoxDecoration(
                           //           color: Color(0xFFFF3737), shape: BoxShape.circle),

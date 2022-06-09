@@ -18,7 +18,6 @@ import 'package:get/get.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
-
 import '../controllers/message_content_controller.dart';
 
 class MessageContentView extends GetView<MessageContentController> {
@@ -27,6 +26,7 @@ class MessageContentView extends GetView<MessageContentController> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       appBar: PrimaryAppbar(
         title: Text(Get.arguments.toString()),
         centerTitle: true,
@@ -52,7 +52,7 @@ class MessageContentView extends GetView<MessageContentController> {
           imService.updateList(message);
         },
         content: Container(
-          margin: EdgeInsets.only(bottom: 65),
+          // margin: EdgeInsets.only(bottom: 65),
           padding: EdgeInsets.only(left: 20, right: 20),
           child: Obx(
             () => ExtendedListView.builder(
@@ -114,8 +114,11 @@ class WeChatInput extends StatefulWidget {
 }
 
 class _WeChatInputState extends State<WeChatInput>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   // var controller = Get.find<MessageContentController>();
+
+  // 0 键盘  1 表情
+  int iconState = 0;
 
   // 0 默认 1 表情 2 添加 3 声音
   int state = 0;
@@ -132,8 +135,27 @@ class _WeChatInputState extends State<WeChatInput>
 
   FocusNode commentFocus = FocusNode();
 
+  // late Animation<double> animation;
+  // late AnimationController controller;
+
+  @override
+  void dispose() {
+    super.dispose();
+    // controller.dispose();
+    tabController.dispose();
+  }
+
   @override
   void initState() {
+    // controller = new AnimationController(
+    //     duration: const Duration(milliseconds: 150), vsync: this);
+    // animation = new Tween(begin: 0.0, end: 340.0).animate(controller)
+    //   ..addListener(() {
+    //     setState(() {
+    //       // the state that has changed here is the animation object’s value
+    //     });
+    //   });
+
     tabController =
         TabController(length: list.length, vsync: this, initialIndex: 0);
 
@@ -144,7 +166,7 @@ class _WeChatInputState extends State<WeChatInput>
 
     commentFocus.addListener(() {
       if (commentFocus.hasFocus) {
-        state = 0;
+        iconState = 0;
         setState(() {});
       }
     });
@@ -174,8 +196,13 @@ class _WeChatInputState extends State<WeChatInput>
   Widget build(BuildContext context) {
     return Scaffold(
       bottomNavigationBar: getBottomBar(context),
-      bottomSheet: bottomSheet(),
-      body: widget.content,
+      backgroundColor: Color(0xFFf6f5f7),
+      body: Column(
+        children: [
+          Flexible(child: widget.content),
+          bottomSheet(),
+        ],
+      ),
     );
   }
 
@@ -185,7 +212,8 @@ class _WeChatInputState extends State<WeChatInput>
       mainAxisSize: MainAxisSize.min,
       children: [
         Offstage(
-          offstage: state != 1,
+          offstage: !(state == 1),
+          // offstage: commentFocus.hasFocus,
           child: Container(
             decoration: BoxDecoration(
               color: Color(0xFFededed),
@@ -337,7 +365,10 @@ class _WeChatInputState extends State<WeChatInput>
                                       SizedBox(width: 6),
                                       InkResponse(
                                         onTap: () {
-                                          widget.send;
+                                          widget.send(
+                                              widget.contentController.text);
+                                          widget.contentController.text = "";
+                                          setState(() {});
                                         },
                                         child: Container(
                                           width: 50,
@@ -385,7 +416,7 @@ class _WeChatInputState extends State<WeChatInput>
         ),
         Offstage(
           offstage: state == 1,
-          child: SafeArea(child: SizedBox.shrink()),
+          child: Container(child: SafeArea(child: SizedBox.shrink())),
         )
       ],
     );
@@ -444,100 +475,110 @@ class _WeChatInputState extends State<WeChatInput>
   }
 
   Widget bottomSheet() {
-    return Container(
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Container(
-            padding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
-            decoration: const BoxDecoration(
-                color: Color(0xFFf6f5f7),
-                border: Border(top: BorderSide(color: Color(0xFFdcdddc)))),
-            child: Row(
-              children: [
-                SizedBox(width: 10),
-                Expanded(
-                  child: state == 3
-                      ? Container()
-                      : Container(
-                          decoration: BoxDecoration(
-                              color: Colors.white,
-                              borderRadius: BorderRadius.circular(7)),
-                          constraints: state == 3
-                              ? BoxConstraints(
-                                  maxHeight: 37,
-                                )
-                              : null,
-                          child: inputText()),
-                ),
-                SizedBox(width: 10),
-                InkResponse(
-                    onTap: () {
-                      int state1 = state == 1 ? 0 : 1;
-
-                      if (state1 == 1) {
-                        state = state1;
-                        commentFocus.unfocus();
-                        setState(() {});
-                      } else {
-                        Future.delayed(Duration(milliseconds: 500), () {
-                          state = state1;
+    return SafeArea(
+      child: Container(
+        margin: EdgeInsets.only(top: 10),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Container(
+              padding: EdgeInsets.symmetric(vertical: 6, horizontal: 10),
+              decoration: const BoxDecoration(
+                  color: Color(0xFFf6f5f7),
+                  border: Border(top: BorderSide(color: Color(0xFFdcdddc)))),
+              child: Row(
+                children: [
+                  SizedBox(width: 10),
+                  Expanded(
+                    child: state == 3
+                        ? Container()
+                        : Container(
+                            decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(7)),
+                            constraints: state == 3
+                                ? BoxConstraints(
+                                    maxHeight: 37,
+                                  )
+                                : null,
+                            child: inputText()),
+                  ),
+                  SizedBox(width: 10),
+                  InkResponse(
+                      onTap: () {
+                        if (iconState == 0 && state == 0) {
+                          iconState = 1;
+                          state = 1;
+                          commentFocus.unfocus();
+                          // controller.forward();
                           setState(() {});
-                        });
-                        FocusScope.of(Get.context!).requestFocus(commentFocus);
-                      }
-
-
-                    },
-                    child: SvgPicture.asset(
-                      "assets/chat_content/${state == 1 ? '键盘' : '表情'}.svg",
-                      width: 27,
-                      height: 28,
-                    )),
-                SizedBox(width: 10),
-                Offstage(
-                  offstage: !sendState,
-                  child: InkResponse(
-                    onTap: () {
-                      widget.send(widget.contentController.text);
-                      widget.contentController.text = "";
-                      setState(() {});
-                    },
-                    child: Container(
-                      width: 50,
-                      height: 40,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                          color: inputState ? Color(0xFF73ba74) : Colors.white,
-                          borderRadius: BorderRadius.circular(5)),
-                      child: new Text('发送',
-                          style: new TextStyle(
-                              color:
-                                  inputState ? Colors.white : Color(0xFFe0e0e0),
-                              fontSize: 13)),
+                        } else if (state == 1 && iconState == 0) {
+                          iconState = 1;
+                          commentFocus.unfocus();
+                        } else if (state == 2) {
+                          state = 1;
+                          iconState = 1;
+                          // controller.forward();
+                          setState(() {});
+                        } else {
+                          FocusScope.of(Get.context!)
+                              .requestFocus(commentFocus);
+                          iconState = 0;
+                          setState(() {});
+                        }
+                      },
+                      child: SvgPicture.asset(
+                        "assets/chat_content/${iconState != 0 ? '键盘' : '表情'}.svg",
+                        width: 27,
+                        height: 28,
+                      )),
+                  SizedBox(width: 10),
+                  Offstage(
+                    offstage: !sendState,
+                    child: InkResponse(
+                      onTap: () {
+                        widget.send(widget.contentController.text);
+                        widget.contentController.text = "";
+                        setState(() {});
+                      },
+                      child: Container(
+                        width: 50,
+                        height: 40,
+                        alignment: Alignment.center,
+                        decoration: BoxDecoration(
+                            color:
+                                inputState ? Color(0xFF73ba74) : Colors.white,
+                            borderRadius: BorderRadius.circular(5)),
+                        child: new Text('发送',
+                            style: new TextStyle(
+                                color: inputState
+                                    ? Colors.white
+                                    : Color(0xFFe0e0e0),
+                                fontSize: 13)),
+                      ),
                     ),
                   ),
-                ),
-                Offstage(
-                  offstage: sendState,
-                  child: Builder(builder: (context) {
-                    return InkResponse(
-                        onTap: () {
-                          state = 2;
-                          commentFocus.unfocus();
-                          setState(() {});
-                        },
-                        child: SvgPicture.asset(
-                          "assets/chat_content/添加.svg",
-                          width: 25,
-                          height: 25,
-                        ));
-                  }),
-                ),
-              ],
+                  Offstage(
+                    offstage: sendState,
+                    child: Builder(builder: (context) {
+                      return InkResponse(
+                          onTap: () {
+                            state = 2;
+                            commentFocus.unfocus();
+                            setState(() {});
+                          },
+                          child: SvgPicture.asset(
+                            "assets/chat_content/添加.svg",
+                            width: 25,
+                            height: 25,
+                          ));
+                    }),
+                  ),
+                ],
+              ),
             ),
-          ),
-        ],
+          ],
+        ),
       ),
     );
   }
