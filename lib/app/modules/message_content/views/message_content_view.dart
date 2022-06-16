@@ -435,7 +435,6 @@ class _WeChatInputState extends State<WeChatInput>
                       final List<AssetEntity>? assets =
                           await AssetPicker.pickAssets(
                         context,
-                        maxAssets: 9,
                       );
                       if (assets == null || assets.isEmpty) return null;
                       for (AssetEntity item in assets) {
@@ -443,8 +442,7 @@ class _WeChatInputState extends State<WeChatInput>
                       }
                     } else if (e.title == "拍照") {
                       final AssetEntity? assets =
-                          await CameraPicker.pickFromCamera(context,
-                              enableRecording: false);
+                          await CameraPicker.pickFromCamera(context);
                       if (assets == null) return null;
                       // sendPhoto(assets, userId: controller.parameter.userId);
                     }

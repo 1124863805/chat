@@ -13,7 +13,7 @@ dependencies:
   flutter_lints: ^1.0.0
   socket_io_client: ^1.0.2
   bot_toast: ^4.0.1 #Toast
-  keyboard_dismisser: ^2.0.0
+  keyboard_dismisser: ^3.0.0
   flutter_screenutil: ^5.0.0+2 #屏幕适配
   extended_image: ^6.0.1
   dio: ^4.0.1
@@ -23,10 +23,10 @@ dependencies:
   image_gallery_saver: '^1.7.0' #照片保存
   app_settings: ^4.1.1 #应用设置
   permission_handler: ^8.3.0
-  wechat_camera_picker: ^2.6.2
-  wechat_assets_picker: ^6.2.2
-  extended_text_field: ^9.0.2
-  extended_text: ^8.0.2
+  wechat_camera_picker: ^3.2.0+1
+  wechat_assets_picker: ^7.3.2
+  extended_text_field: ^10.1.0
+  extended_text: ^9.1.0
   extended_list: ^3.0.0
   flutter: 
     sdk: flutter
