@@ -6,6 +6,7 @@ import 'package:chat/app/modules/message_content/compontent/extended_text/my_spe
 import 'package:chat/app/modules/message_content/compontent/wx_expression.dart';
 import 'package:chat/app/modules/search_friend/views/search_friend_view.dart';
 import 'package:chat/app/widgets/confirm_alert.dart';
+import 'package:chat/app/widgets/custom_text.dart';
 import 'package:chat/app/widgets/primary_appbar.dart';
 import 'package:chat/main.dart';
 import 'package:extended_list/extended_list.dart';
@@ -48,6 +49,8 @@ class MessageContentView extends GetView<MessageContentController> {
               receiver: Get.arguments.toString(), content: value);
 
           controller.list.insert(0, message);
+
+          controller.contentController.text = '';
 
           imService.updateList(message);
         },
@@ -135,27 +138,14 @@ class _WeChatInputState extends State<WeChatInput>
 
   FocusNode commentFocus = FocusNode();
 
-  // late Animation<double> animation;
-  // late AnimationController controller;
-
   @override
   void dispose() {
     super.dispose();
-    // controller.dispose();
     tabController.dispose();
   }
 
   @override
   void initState() {
-    // controller = new AnimationController(
-    //     duration: const Duration(milliseconds: 150), vsync: this);
-    // animation = new Tween(begin: 0.0, end: 340.0).animate(controller)
-    //   ..addListener(() {
-    //     setState(() {
-    //       // the state that has changed here is the animation object’s value
-    //     });
-    //   });
-
     tabController =
         TabController(length: list.length, vsync: this, initialIndex: 0);
 
@@ -198,10 +188,7 @@ class _WeChatInputState extends State<WeChatInput>
       bottomNavigationBar: getBottomBar(context),
       backgroundColor: Color(0xFFf6f5f7),
       body: Column(
-        children: [
-          Flexible(child: widget.content),
-          bottomSheet(),
-        ],
+        children: [Flexible(child: widget.content), bottomSheet()],
       ),
     );
   }
@@ -486,24 +473,56 @@ class _WeChatInputState extends State<WeChatInput>
                   border: Border(top: BorderSide(color: Color(0xFFdcdddc)))),
               child: Row(
                 children: [
+                  InkResponse(
+                    onTap: () {
+                      print(iconState);
+                      if (state == 3) {
+                        state = 0;
+                        if (widget.contentController.text.length > 0) {
+                          sendState = true;
+                        }
+                      } else {
+                        if(iconState == 1){
+                          iconState = 0;
+                        }
+                        state = 3;
+                        sendState = false;
+                      }
+                      setState(() {});
+                      Future.delayed(Duration(milliseconds: 100), () {
+                        if (state != 3) {
+                          FocusScope.of(Get.context!)
+                              .requestFocus(commentFocus);
+                          setState(() {});
+                        } else {
+                          commentFocus.unfocus();
+                          setState(() {});
+                        }
+                      });
+                    },
+                    child: SvgPicture.asset(
+                      "assets/chat_content/${state != 3 ? '声音播放-线' : '键盘'}.svg",
+                      width: 27,
+                      height: 28,
+                    ),
+                  ),
                   SizedBox(width: 10),
                   Expanded(
-                    child: state == 3
-                        ? Container()
-                        : Container(
-                            decoration: BoxDecoration(
-                                color: Colors.white,
-                                borderRadius: BorderRadius.circular(7)),
-                            constraints: state == 3
-                                ? BoxConstraints(
-                                    maxHeight: 37,
-                                  )
-                                : null,
-                            child: inputText()),
+                    child: Container(
+                        decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(7)),
+                        constraints: state == 3
+                            ? BoxConstraints(
+                                maxHeight: 37,
+                              )
+                            : null,
+                        child: inputText()),
                   ),
                   SizedBox(width: 10),
                   InkResponse(
                       onTap: () {
+
                         if (iconState == 0 && state == 0) {
                           iconState = 1;
                           state = 1;
@@ -516,7 +535,10 @@ class _WeChatInputState extends State<WeChatInput>
                         } else if (state == 2) {
                           state = 1;
                           iconState = 1;
-                          // controller.forward();
+                          setState(() {});
+                        } else if (state == 3) {
+                          iconState = 1;
+                          state = 1;
                           setState(() {});
                         } else {
                           FocusScope.of(Get.context!)
@@ -582,18 +604,34 @@ class _WeChatInputState extends State<WeChatInput>
   }
 
   Widget inputText() {
-    return ExtendedTextField(
-      onEditingComplete: () async {
-        widget.send(widget.contentController.text);
-      },
-      cursorColor: Color(0xFF56bd69),
-      specialTextSpanBuilder: MySpecialTextSpanBuilder(),
-      minLines: 1,
-      maxLines: 5,
-      textInputAction: TextInputAction.send,
-      controller: widget.contentController,
-      focusNode: commentFocus,
-      decoration: wxC.commonInputStyle,
+    return Stack(
+      children: [
+        ExtendedTextField(
+          onEditingComplete: () async {
+            widget.send(widget.contentController.text);
+          },
+          cursorColor: Color(0xFF56bd69),
+          specialTextSpanBuilder: MySpecialTextSpanBuilder(),
+          minLines: 1,
+          maxLines: 5,
+          textInputAction: TextInputAction.send,
+          controller: widget.contentController,
+          focusNode: commentFocus,
+          decoration: wxC.commonInputStyle,
+        ),
+        if (state == 3)
+          InkResponse(
+            child: Container(
+              color: Colors.white,
+              alignment: Alignment.center,
+              child: LT(
+                text: "按住 说话",
+                fontSize: 15,
+                weight: FontWeight.bold,
+              ),
+            ),
+          )
+      ],
     );
   }
 }
