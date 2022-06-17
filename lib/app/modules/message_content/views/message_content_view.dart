@@ -13,9 +13,11 @@ import 'package:extended_list/extended_list.dart';
 import 'package:extended_text/extended_text.dart';
 import 'package:extended_text_field/extended_text_field.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:flutter_svg/svg.dart';
 
 import 'package:get/get.dart';
+import 'package:keyboard_dismisser/keyboard_dismisser.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:wechat_assets_picker/wechat_assets_picker.dart';
 import 'package:wechat_camera_picker/wechat_camera_picker.dart';
@@ -188,7 +190,21 @@ class _WeChatInputState extends State<WeChatInput>
       bottomNavigationBar: getBottomBar(context),
       backgroundColor: Color(0xFFf6f5f7),
       body: Column(
-        children: [Flexible(child: widget.content), bottomSheet()],
+        children: [
+          Flexible(
+              child: InkResponse(
+                  onTap: () {
+                    WidgetsBinding.instance.focusManager.primaryFocus
+                        ?.unfocus();
+                    if (state != 0) {
+                      setState(() {
+                        state = 0;
+                      });
+                    }
+                  },
+                  child: widget.content)),
+          bottomSheet()
+        ],
       ),
     );
   }
@@ -482,7 +498,7 @@ class _WeChatInputState extends State<WeChatInput>
                           sendState = true;
                         }
                       } else {
-                        if(iconState == 1){
+                        if (iconState == 1) {
                           iconState = 0;
                         }
                         state = 3;
@@ -522,7 +538,6 @@ class _WeChatInputState extends State<WeChatInput>
                   SizedBox(width: 10),
                   InkResponse(
                       onTap: () {
-
                         if (iconState == 0 && state == 0) {
                           iconState = 1;
                           state = 1;
@@ -603,6 +618,64 @@ class _WeChatInputState extends State<WeChatInput>
     );
   }
 
+  String voiceIco = "assets/chat_content/voice_volume_1.png";
+
+  OverlayEntry? overlayEntry;
+
+  buildOverLayView(BuildContext context) {
+    if (overlayEntry == null) {
+      overlayEntry = new OverlayEntry(builder: (content) {
+        return Positioned(
+          top: MediaQuery.of(context).size.height * 0.5 - 80,
+          left: MediaQuery.of(context).size.width * 0.5 - 80,
+          child: Material(
+            type: MaterialType.transparency,
+            child: Center(
+              child: Opacity(
+                opacity: 0.8,
+                child: Container(
+                  width: 160,
+                  height: 160,
+                  decoration: BoxDecoration(
+                    color: Color(0xff77797A),
+                    borderRadius: BorderRadius.all(Radius.circular(20.0)),
+                  ),
+                  child: Column(
+                    children: <Widget>[
+                      Container(
+                        margin: EdgeInsets.only(top: 10),
+                        child: new Image.asset(
+                          voiceIco,
+                          width: 100,
+                          height: 100,
+                          // package: 'flutter_plugin_record',
+                        ),
+                      ),
+                      Container(
+//                      padding: EdgeInsets.only(right: 20, left: 20, top: 0),
+                        child: Text(
+                          "手指上滑,取消发送",
+                          style: TextStyle(
+                              fontStyle: FontStyle.normal,
+                              color: Colors.white,
+                              fontSize: 15),
+                        ),
+                      )
+                    ],
+                  ),
+                ),
+              ),
+            ),
+          ),
+        );
+      });
+      Overlay.of(context)!.insert(overlayEntry!);
+    }
+  }
+
+  // 是否在长按
+  bool isLongState = false;
+
   Widget inputText() {
     return Stack(
       children: [
@@ -620,12 +693,37 @@ class _WeChatInputState extends State<WeChatInput>
           decoration: wxC.commonInputStyle,
         ),
         if (state == 3)
-          InkResponse(
+          GestureDetector(
+            onLongPressStart: (e) async {
+              buildOverLayView(context);
+              isLongState = true;
+              setState(() {});
+            },
+            onLongPressEnd: (e) async {
+              print('onLongPressEnd');
+
+              if (e.localPosition.dx < 0 ||
+                  e.localPosition.dy < 0 ||
+                  e.localPosition.dy > 40) {
+                print("取消了");
+              }
+
+              try {
+                if (overlayEntry != null) {
+                  overlayEntry!.remove();
+                  overlayEntry = null;
+                }
+              } catch (err) {}
+              isLongState = false;
+              setState(() {});
+            },
             child: Container(
-              color: Colors.white,
+              decoration: BoxDecoration(
+                  color: isLongState ? Colors.grey.shade200 : Colors.white,
+                  borderRadius: BorderRadius.circular(10)),
               alignment: Alignment.center,
               child: LT(
-                text: "按住 说话",
+                text: "${isLongState ? '松开 结束' : '按住 说话'}",
                 fontSize: 15,
                 weight: FontWeight.bold,
               ),
